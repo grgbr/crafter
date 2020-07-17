@@ -1,0 +1,1 @@
+FLAVOURS := prod debug
