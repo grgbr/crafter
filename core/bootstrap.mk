@@ -50,9 +50,9 @@ $(error Invalid OUTDIR specified !)
 endif
 OUTDIR := $(abspath $(strip $(OUTDIR)))
 
-# CRAFTERDIR - Path to crafter core logic directory.
+# CRAFTERDIR - Path to crafter directory.
 #
-# The directory under which this makefile is located...
+# The parent of directory under which this makefile is located...
 #
 # Must exist !
 CRAFTERDIR := $(realpath $(strip $(CRAFTERDIR)))
@@ -112,7 +112,7 @@ XDG_CONFIG_DIR := $(if $(XDG_CONFIG_HOME),$(XDG_CONFIG_HOME),$(HOME)/.config)
 CONFIGDIR ?= $(XDG_CONFIG_DIR)/crafter
 
 # Source common helper macros
-include $(CRAFTERDIR)/helpers.mk
+include $(CRAFTERDIR)/core/helpers.mk
 
 # Source main platform configuration file
 include $(PLATFORMDIR)/config.mk
@@ -142,9 +142,10 @@ endef
 # $(1): path to makefile to inspect
 # $(2): inspection target to operate
 #
-# See crafter core inspection makefile $(CRAFTERDIR)/inspect.mk for more infos.
+# See crafter core inspection makefile $(CRAFTERDIR)/core/inspect.mk for more
+# infos.
 define _inspect_cmd
-$(MAKE) --makefile=$(CRAFTERDIR)/inspect.mk \
+$(MAKE) --makefile=$(CRAFTERDIR)/core/inspect.mk \
         TOPDIR:=$(TOPDIR) \
         CONFIGDIR:=$(CONFIGDIR) \
         OUTDIR:=$(OUTDIR) \
@@ -515,7 +516,7 @@ $(help_short_message)
   MODULEDIR       -- directory path under which user / platform module
                      implementation makefiles are seached for
                      [$(MODULEDIR)]
-  CRAFTERDIR      -- directory path under which core crafter logic is located
+  CRAFTERDIR      -- directory path under which crafter logic is located
                      [$(CRAFTERDIR)]
   CONFIGDIR       -- directory path under which end-user customization files are
                      searched for

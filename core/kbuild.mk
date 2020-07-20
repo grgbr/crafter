@@ -132,7 +132,7 @@ guiconfig: $(module_builddir)/.config
 	$$($(strip $(5)))
 	$(Q)touch $(config_target)
 
-$(config_target): $(module_builddir)/.config $(CRAFTERDIR)/kbuild.mk
+$(config_target): $(module_builddir)/.config $(CRAFTERDIR)/core/kbuild.mk
 
 $(module_builddir)/.config: $$(realpath $(1)) \
                             $(module_prereqs) \

@@ -57,7 +57,7 @@ endef
 ################################################################################
 
 define _cmake_config_rule
-$(config_target): $(CRAFTERDIR)/cmake.mk
+$(config_target): $(CRAFTERDIR)/core/cmake.mk
 	$$($(strip $(1)))
 	$(Q)touch $$(@)
 endef

@@ -1,4 +1,4 @@
-include $(CRAFTERDIR)/module.mk
+include $(CRAFTERDIR)/core/module.mk
 
 $(call gen_module_depends,nodep)
 

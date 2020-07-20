@@ -26,7 +26,7 @@
 all: bundle
 
 # ...and utility macros.
-include $(CRAFTERDIR)/helpers.mk
+include $(CRAFTERDIR)/core/helpers.mk
 
 # Import platform specific definitions...
 include $(PLATFORMDIR)/$(TARGET_BOARD)/$(TARGET_FLAVOUR).mk
@@ -40,8 +40,8 @@ include $(PLATFORMDIR)/$(TARGET_BOARD)/$(TARGET_FLAVOUR).mk
 # and current module implementation makefiles are listed here. By default, the
 # config target will depend on this.
 module_prereqs := $(MODULEDIR)/$(MODULENAME).mk \
-                  $(CRAFTERDIR)/module.mk \
-                  $(CRAFTERDIR)/helpers.mk \
+                  $(CRAFTERDIR)/core/module.mk \
+                  $(CRAFTERDIR)/core/helpers.mk \
                   $(PLATFORMDIR)/$(TARGET_BOARD)/$(TARGET_FLAVOUR).mk
 
 # stamp() - Given the specified target, expand to timestamp file path for

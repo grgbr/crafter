@@ -92,7 +92,7 @@ define _ubifs_rules
 $(foreach v,$(2) $(3) $(4) $(5) $(6),$(call dieon_undef_or_empty,$(v)))
 
 # Generate filesystem table content
-$(module_builddir)/fstable.txt: $(CRAFTERDIR)/ubifs.mk
+$(module_builddir)/fstable.txt: $(CRAFTERDIR)/core/ubifs.mk
 	$(Q)$$(call gen_fstable_cmd,$$(@),$(strip $(2)))
 
 # Bundle filesystem image

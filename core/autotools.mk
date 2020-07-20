@@ -116,7 +116,7 @@ $(config_target): $(call stamp,bootstrap)
 	$(Q)touch $$(@)
 
 $(call stamp,bootstrap): $(module_prereqs) \
-                         $(CRAFTERDIR)/autotools.mk \
+                         $(CRAFTERDIR)/core/autotools.mk \
                          | $(call stampdir,$(MODULENAME)) \
                            $(module_builddir)
 	$$($(strip $(2)))
