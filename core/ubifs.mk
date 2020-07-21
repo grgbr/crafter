@@ -1,45 +1,8 @@
+include $(CRAFTERDIR)/core/fakefs.mk
+
 ################################################################################
 # UBI FS and fakeroot utilities
 ################################################################################
-
-# gen_fstable_cmd() - File system specification table file generation command
-#                     list
-# $(1): path to file system specification file to generate
-# $(2): name of variable holding file system specification string
-#
-# Output a shell command list suitable for generating a file system
-# specification table file from string passed in argument.
-#
-# Warning: echo_multi_line_var_cmd() macro requires an advanced shell.
-define gen_fstable_cmd
-$(call log_action,FSTABLE,$(1)); \
-$(call echo_multi_line_var_cmd,$($(strip $(2)))) > $(strip $(1))
-endef
-
-# gen_fakefs_cmd() - Fakeroot directory hierarchy generation command list
-# $(1): path to root of directory hierarchy to generate
-# $(2): path to file system specification file
-# $(3): path to fakeroot environment file
-# $(4): path to root of input directory hierarchy to generate $(1) from
-#
-# Output a shell command list suitable for generating a directory hierarchy
-# from entries found under the specificied input root directory.
-# Entries will be generated according to file system properties defined into the
-# given file system specification file.
-# Generation operations will be wrapped into a fakeroot environment to overcome
-# permission issues when not running as root user.
-#
-# Note: the final touch command is required to update the output root directory
-#       modification time with respect to the fakeroot environment file.
-define gen_fakefs_cmd
-$(call log_action,FAKEFS,$(1)); \
-$(CRAFTER_SCRIPTDIR)/genfakefs.sh $(if $(Q),--quiet) \
-                                  --fake $(strip $(3)) \
-                                  $(strip $(1)) \
-                                  $(strip $(4)) \
-                                  $(strip $(2)) && \
-touch $(strip $(1))
-endef
 
 # gen_ubifs_cmd() - UBIFS image generation command list
 # $(1): path to output image file

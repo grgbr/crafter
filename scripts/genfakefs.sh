@@ -405,7 +405,7 @@ if [ $exec_cmd -gt 0 ]; then
 	fi
 
 	# Execute the list of commands computed above.
-	$fake_cmd eval "$cmd_list"
+	$fake_cmd sh -c "$cmd_list"
 else
 	# Output a list of commands that would be performed if the --exec option
 	# was passed on the command line.
