@@ -590,3 +590,22 @@ echoe := /bin/echo -e
 define echo_multi_line_var_cmd
 $(echoe) $$'$(subst $(newline),\n,$(1))'
 endef
+
+# mkpasswd() - Expand to a shell command suitable for generating a passwd /
+#              shadow file password
+#
+# $(1): method used to encrypt the password (as expected by the crypt based
+#       mkpasswd utility)
+# $(2): the password to encrypt in clear text
+#
+# Password will generated in a way that is suitable for embedding it directly
+# into the 'encrypted password' field of shadow files using random salt and
+# proper crypt compliant id string.
+# See mkpasswd(1) and crypt(3) man pages for more infos.
+#
+# Warning! Giving an empty password as second argument will return an empty
+#          string which, when used as an 'encrypted password' field will allow
+#          login with no password at all !
+define mkpasswd
+$(strip $(if $(2),$(shell echo '$(2)' | mkpasswd --method='$(1)' --stdin)))
+endef
