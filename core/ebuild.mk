@@ -40,7 +40,7 @@ ebuild_configured = $(if $(realpath $(module_builddir)/.config),y,n)
 # $(2): Ebuild make targets
 # $(3): Ebuild make arguments
 define ebuild_make_cmd
-$(MAKE) -C $(1) $(2) $(verbosity) BUILDDIR:=$(module_builddir) $(3)
+$(MAKE) -C $(1) $(2) $(verbosity) BUILDDIR:="$(module_builddir)" $(3)
 endef
 
 # ebuild_config_cmd() - Expand to a shell command allowing to run a Ebuild make
@@ -52,10 +52,10 @@ endef
 #
 # Usual config targets are: config, oldconfig, defconfig, etc...
 define ebuild_config_cmd
-$(call log_action,KCONF,$(module_builddir)/.config); \
+$(call log_action,ECONF,$(module_builddir)/.config); \
 $(MAKE) $(if $(Q),--quiet) \
         -C $(1) \
-        $(2) $(verbosity) O:=$(module_builddir) $(3) \
+        $(2) $(verbosity) BUILDDIR:="$(module_builddir)" $(3) \
         $(redirect)
 endef
 
@@ -66,12 +66,12 @@ endef
 # $(2): list of paths to config files to merge
 # $(3): Ebuild make arguments
 define ebuild_merge_config_cmd
-$(call log_action,KMERGE,$(module_builddir)/.config); \
+$(call log_action,EMERGE,$(module_builddir)/.config); \
 $(if $(Q),$(foreach f,$(2),$(call log_action,,$(f));)) \
 cd $(module_builddir) && \
 $(CRAFTER_SCRIPTDIR)/kconfig_merge.sh -m .config $(2) $(redirect) && \
 $(MAKE) $(if $(Q),--quiet) -C $(1) olddefconfig \
-        $(verbosity) O:=$(module_builddir) $(3)
+        $(verbosity) BUILDDIR:="$(module_builddir)" $(3)
 endef
 
 # ebuild_saveconfig_cmd() - Expand to a shell command allowing to save current
@@ -80,11 +80,11 @@ endef
 # $(1): Ebuild compliant source tree
 # $(2): Ebuild make arguments
 define ebuild_saveconfig_cmd
-$(call log_action,KSAVE,$(module_builddir)/defconfig); \
+$(call log_action,ESAVE,$(module_builddir)/defconfig); \
 $(MAKE) $(if $(Q),--quiet) \
         -C $(1) \
-        savedefconfig \
-        $(verbosity) O:=$(module_builddir) $(2)
+        saveconfig \
+        $(verbosity) BUILDDIR:="$(module_builddir)" $(2)
 endef
 
 # ebuild_guiconfig_cmd() - Expand to a shell command allowing to lauch a Kconfig
@@ -101,11 +101,11 @@ endef
 #
 # Usual configurators are: xconfig, menuconfig, etc...
 define ebuild_guiconfig_cmd
-$(call log_action,KGUI,$(module_builddir)/.config); \
+$(call log_action,EGUI,$(module_builddir)/.config); \
 $(MAKE) $(if $(Q),--quiet) \
         -C $(1) \
         $(if $(CRAFTER_EBUILD_GUICONFIG),$(CRAFTER_EBUILD_GUICONFIG),xconfig) \
-        $(verbosity) O:=$(module_builddir) $(2)
+        $(verbosity) BUILDDIR:="$(module_builddir)" $(2)
 endef
 
 ################################################################################
