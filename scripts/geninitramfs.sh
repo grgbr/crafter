@@ -99,7 +99,7 @@ if [ -n "$fake_env" ]; then
 	fake_cmd="${FAKEROOT:=fakeroot} -i $fake_env --"
 fi
 
-# Now wrap mkfs.ubifs invocation within fakeroot (if required).
+# Now wrap cpio invocation within fakeroot (if required).
 cd $root_dir
 find . | \
 	$fake_cmd cpio --quiet --create --format=newc | \
