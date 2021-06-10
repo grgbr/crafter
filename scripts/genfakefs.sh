@@ -390,22 +390,25 @@ if [ $# -eq 3 ]; then
 fi
 
 if [ $exec_cmd -gt 0 ]; then
-	# Compute the list of commands to run to generate the requested output
-	# directory hierarchy.
-	cmd_list="$(gen_cmd_list $spec_file)"
-
 	# If requested, prepare the fakeroot wrapper invocation.
-	fake_cmd=""
+	fake_cmd="${FAKEROOT:=fakeroot}"
 	if [ -n "$fake_env" ]; then
-		fake_cmd="exec ${FAKEROOT:=fakeroot} -s $fake_env"
+		fake_cmd="$fake_cmd -s $fake_env"
 		if [ -e "$fake_env" ]; then
 			fake_cmd="$fake_cmd -i $fake_env"
 		fi
-		fake_cmd="$fake_cmd -- "
 	fi
 
-	# Execute the list of commands computed above.
-	$fake_cmd sh -c "$cmd_list"
+	# Compute the list of commands to run to generate the requested output and
+	# execute it through fakeroot.
+	#
+	# Note: as fakeroot is a shell script itself, we need to disable errexit
+	# option since:
+	# * it is inherited from SHELLOPTS environment variable export above,
+	# * fakeroot is not resilient to the errexit option.
+	# It is re-enabled by giving it to /bin/sh command as the -e option...
+	set +e
+	gen_cmd_list "$spec_file" | $fake_cmd -- /bin/sh -e
 else
 	# Output a list of commands that would be performed if the --exec option
 	# was passed on the command line.

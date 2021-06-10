@@ -100,7 +100,14 @@ if [ -n "$fake_env" ]; then
 fi
 
 # Now wrap cpio invocation within fakeroot (if required).
+#
+# Note: as fakeroot is a shell script itself, we need to disable errexit
+# option since:
+# * it is inherited from SHELLOPTS environment variable export above,
+# * fakeroot is not resilient to the errexit option.
+# It is re-enabled by giving it to /bin/sh command as the -e option...
 cd $root_dir
+set +e
 find . | \
 	$fake_cmd cpio --quiet --create --format=newc | \
 	$compr_cmd \

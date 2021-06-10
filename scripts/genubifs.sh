@@ -131,6 +131,13 @@ if echo "$ubifs_opts" | \
 fi
 
 # Now wrap mkfs.ubifs invocation within fakeroot (if required).
+#
+# Note: as fakeroot is a shell script itself, we need to disable errexit
+# option since:
+# * it is inherited from SHELLOPTS environment variable export above,
+# * fakeroot is not resilient to the errexit option.
+# It is re-enabled by giving it to /bin/sh command as the -e option...
+set +e
 exec $fake_cmd ${MKUBIFS:=mkfs.ubifs} \
 	--output=$ubifs_img \
 	--root=$root_dir $ubifs_opts

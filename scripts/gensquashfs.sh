@@ -130,6 +130,13 @@ if echo "$squashfs_opts" | \
 fi
 
 # Now wrap mksquashfs invocation within fakeroot (if required).
+#
+# Note: as fakeroot is a shell script itself, we need to disable errexit
+# option since:
+# * it is inherited from SHELLOPTS environment variable export above,
+# * fakeroot is not resilient to the errexit option.
+# It is re-enabled by giving it to /bin/sh command as the -e option...
+set +e
 exec $fake_cmd ${MKSQUASHFS:=mksquashfs} \
 	$root_dir \
 	$squashfs_img \
