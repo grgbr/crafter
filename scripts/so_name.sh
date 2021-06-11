@@ -12,6 +12,7 @@ so_name()
 {
 	local so_path="$1"
 
+	env LC_ALL=C \
 	$readelf -d $so_path | \
 	sed -n '/(SONAME)[[:blank:]]\+Library soname/s/[^[]\+\[\([^]]\+\)\].*/\1/p'
 }
