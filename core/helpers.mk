@@ -465,6 +465,15 @@ if ! $(call fake_root_cmd, \
 fi
 endef
 
+# drop_dir_cmd() - Expand to a shell command suitable for recursively removing a
+#                  directory previously installed under the bundle area.
+#
+# $(1): path to previously installed directory
+define drop_dir_cmd
+$(call log_action,DROPDIR,$(1)); \
+$(call fake_root_cmd,$(bundle_fake_root_env),rm -rf "$(strip $(1))")
+endef
+
 # bundle_bin_cmd() - Expand to a shell command suitable for installing a binary
 #                    file under the bundle area.
 #
