@@ -411,6 +411,39 @@ if [ -d "$(2)" ]; then \
 fi
 endef
 
+# add_unix_cred_cmd() - Expand to a shell command suitable for adding or
+#                       replacing an entry into UNIX based credential file.
+#
+# $(1): path to unix credentials destination file
+# $(2): credential string
+#
+# Generated / modified file as well as credential string is expected to comply
+# with UNIX base system files as stated by group(5), passwd(5), gshadow(5) and
+# shadow(5) manual pages.
+define add_unix_cred_cmd
+$(call log_action,ADDCRED,$(1)); \
+sed -i \
+    '/^$(firstword $(subst :, ,$(strip $(2)))):.\+/d;/^[[:blank:]]*$$/d' \
+    $(1) || true; \
+echo '$(strip $(2))' >> $(1)
+endef
+
+# del_unix_cred_cmd() - Expand to a shell command suitable for removing
+#                       an entry from UNIX based credential file (if existing).
+#
+# $(1): path to unix credentials destination file
+# $(2): credential string given to add_unix_cred_cmd()
+#
+# Generated / modified file as well as credential string is expected to comply
+# with UNIX base system files as stated by group(5), passwd(5), gshadow(5) and
+# shadow(5) manual pages.
+define del_unix_cred_cmd
+$(call log_action,DELCRED,$(1))
+sed -i \
+    '/^$(firstword $(subst :, ,$(strip $(2)))):.\+/d;/^[[:blank:]]*$$/d' \
+    $(1) || true
+endef
+
 # fake_root_cmd() - Expand to a shell command suitable for wrapping command in a
 #                   fakeroot environment.
 #
