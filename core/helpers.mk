@@ -424,7 +424,7 @@ define add_unix_cred_cmd
 $(call log_action,ADDCRED,$(1)); \
 sed -i \
     '/^$(firstword $(subst :, ,$(strip $(2)))):.\+/d;/^[[:blank:]]*$$/d' \
-    $(1) || true; \
+    $(1) 2>/dev/null || true; \
 echo '$(strip $(2))' >> $(1)
 endef
 
@@ -441,7 +441,7 @@ define del_unix_cred_cmd
 $(call log_action,DELCRED,$(1))
 sed -i \
     '/^$(firstword $(subst :, ,$(strip $(2)))):.\+/d;/^[[:blank:]]*$$/d' \
-    $(1) || true
+    $(1) 2>/dev/null || true
 endef
 
 # fake_root_cmd() - Expand to a shell command suitable for wrapping command in a
