@@ -443,6 +443,8 @@ define help_short_message
   all                      -- construct all modules
   clobber                  -- remove all generated objects
   show-modules             -- display modules the default platform depends on
+  list-variables           -- display a list of known public platform variables
+  show-variable-<VARIABLE> -- display value of a known public platform variable
 
 
 ::Module targets:: Applicable to MODULE and default platform only !
@@ -470,6 +472,8 @@ define help_short_message
   FLAVOUR     -- a board specific build flavour as listed by the
                  list-<BOARD>-flavours target
   MODULE      -- a default platform MODULE as listed by the show-modules target
+  VARIABLE    -- a public variable known to the default platform as listed by
+                 the list-variables target
 endef
 
 # help: - Top level short help target.
@@ -613,6 +617,8 @@ show-platform:
 	$(_warnon_unknown_platform)
 	@echo $(if $(TARGET_PLATFORM),$(TARGET_PLATFORM),none)
 
+################################################################################
+
 # _platform_independent_targets - List of platform independent targets.
 #
 # A space separated list of targets not relying upon a valid platform tuple
@@ -725,6 +731,35 @@ $(_module_help_targets):
 .PHONY: show-modules
 show-modules:
 	@$(call _break_words_cmd,$(_platform_modules))
+
+define _list_variables_cmd
+$(call _inspect_cmd, \
+       $(PLATFORMDIR)/$(TARGET_BOARD)/$(TARGET_FLAVOUR).mk, \
+       TARGET_BOARD:=$(TARGET_BOARD) \
+       TARGET_FLAVOUR:=$(TARGET_FLAVOUR) \
+       list-vars)
+endef
+
+# list-variables: - Display list of known public variables.
+#
+# Will warn the user if the platform is undefined / invalid.
+.PHONY: list-variables
+list-variables:
+	@$(call _break_words_cmd,$(sort $(shell $(call _list_variables_cmd))))
+
+define _get_variable_cmd
+$(call _inspect_cmd, \
+       $(PLATFORMDIR)/$(TARGET_BOARD)/$(TARGET_FLAVOUR).mk, \
+       TARGET_BOARD:=$(TARGET_BOARD) \
+       TARGET_FLAVOUR:=$(TARGET_FLAVOUR) \
+       show-$(1))
+endef
+
+# show-variable-%: - Show value of a known public variable.
+#
+# If requested variable is undefined, display an empty string.
+show-variable-%:
+	@echo '$(shell $(call _get_variable_cmd,$(subst show-variable-,,$(@))))'
 
 # _platform_module_prereqs() - Expand to a list of prerequisites of module
 #                              recipes generating objects.

@@ -20,15 +20,16 @@
 # Include the makefile to inspect.
 include $(MKFILE)
 
-# is_file_define() - Expand to non null string if the keyword given in argument
-#                    is a make variable or macros defined in a makefile.
+# _is_known_var() - Expand to non null string if the keyword given in argument
+#                   is a make variable or macros defined in a makefile or on
+#                   command line.
 #
 # $(1): keyword
 #
 # See section 8.10 of make manual for more infos:
 # https://www.gnu.org/software/make/manual/html_node/Origin-Function.html
-define is_file_define
-$(if $(findstring file,$(origin $(1))),$(1))
+define _is_known_var
+$(if $(filter file command,$(origin $(1))),$(1))
 endef
 
 # list-module-depends: - Target displaying the modules the inspected module
@@ -47,11 +48,20 @@ list-module-depends:
 show-module-help:
 	$(if $(module_help),$(info $(subst $(newline),\n,$(module_help))))
 
+# list-vars: - Target displaying listing all publicly available variables
+#
+# See section 8.8 of make manual:
+# https://www.gnu.org/software/make/manual/html_node/Value-Function.html
+list-vars:
+	$(foreach v, \
+	          $(filter-out .% _%,$(.VARIABLES)), \
+	          $(if $(call _is_known_var,$(v)),$(info $(v))))
+
 # show-%: - Target displaying the unexpanded value of a variable defined in thee
 #           the inspected makefile.
 #
 # See section 8.8 of make manual:
 # https://www.gnu.org/software/make/manual/html_node/Value-Function.html
 show-%:
-	$(if $(call is_file_define,$(subst show-,,$(@))), \
+	$(if $(call _is_known_var,$(subst show-,,$(@))), \
 	     $(info $(strip $(value $(subst show-,,$(@))))))
