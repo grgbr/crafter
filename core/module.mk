@@ -253,7 +253,7 @@ $(addprefix $(builddir),$(MODULES)) \
 $(addprefix $(installdir),$(MODULES)) \
 $(stagingdir) $(addprefix $(stagingdir)/,$(_root_subdirs)) \
 $(hostdir) $(addprefix $(hostdir)/,$(_root_subdirs)) \
-$(bundledir):
+$(bundledir) $(bundle_rootdir):
 	$(Q)$(call mkdir_cmd,$(@))
 
 # Pattern rule creating stamp files.
