@@ -75,7 +75,7 @@ endef
 
 # autotools_target_configure() - Expand to a shell construct suitable for
 #                                running the Autotools based current module
-#                                configure operation.
+#                                targetconfigure operation.
 # $(1): path to source directory
 # $(2): autotools arguments to invoke configure with
 #
@@ -91,12 +91,45 @@ $(1)/configure \
 	$(2)
 endef
 
-# autotools_target_make() - Expand to a shell command allowing to run an
-#                           Autotools based make operation for current module.
+# autotools_host_configure() - Expand to a shell construct suitable for
+#                              running the Autotools based current module
+#                              host configure operation.
+# $(1): path to source directory
+# $(2): autotools arguments to invoke configure with
+#
+# Configure the build of current module for out-of-tree build and according to
+# arguments given as $(2) parameter.
+define autotools_host_configure
+$(call log_action,ACONF,$(module_builddir)) && \
+cd $(module_builddir) && \
+$(1)/configure \
+	--prefix=$(hostdir) \
+	--cache=$(module_builddir)/autom4te.cache \
+	$(if $(Q),--quiet) \
+	$(2)
+endef
 
+# autotools_target_make() - Expand to a shell command allowing to run an
+#                           Autotools based target make operation for current
+#                           module.
 # $(1): autotools make targets
 # $(2): autotools arguments to invoke make with
 define autotools_target_make
+$(MAKE) -C $(module_builddir) \
+        $(1) \
+        $(2) \
+        $(if $(Q), \
+             LIBTOOLFLAGS:="--quiet", \
+             LIBTOOLFLAGS:="--verbose") \
+        $(verbosity)
+endef
+
+# autotools_host_make() - Expand to a shell command allowing to run an
+#                         Autotools based host make operation for current
+#                         module.
+# $(1): autotools make targets
+# $(2): autotools arguments to invoke make with
+define autotools_host_make
 $(MAKE) -C $(module_builddir) \
         $(1) \
         $(2) \
