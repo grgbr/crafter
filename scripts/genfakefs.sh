@@ -205,7 +205,7 @@ gen_cmd_list()
 
 	# For each line of input...
 	cat $spec_file | while read line; do
-		if ! echo "$line" | grep --quiet '^#.*'; then
+		if ! echo "$line" | grep --extended-regexp --quiet '^#.*|^[[:blank:]]*$'; then
 			# Not a comment line: parse and output command according
 			# to current line specification
 			local cmd=$(parse_spec_line $line)
