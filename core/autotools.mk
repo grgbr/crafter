@@ -105,7 +105,6 @@ cd $(module_builddir) && \
 $(1)/configure \
 	--prefix=$(hostdir) \
 	--cache=$(module_builddir)/autom4te.cache \
-	$(XTCHAIN_AUTOTOOLS_HOST_CONFIGURE_ARGS) \
 	$(if $(Q),--quiet) \
 	$(2)
 endef
