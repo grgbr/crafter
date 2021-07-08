@@ -521,8 +521,10 @@ if ! $(call fake_root_cmd, \
 	echo 'bundle_bin: $(strip $(1)): install failed.' >&2; \
 	exit 1; \
 fi; \
-if ! $(LIBC_CROSS_COMPILE)strip --strip-all "$$dst_binfile"; then \
-	echo 'bundle_bin: $$dst_binfile: strip failed.' >&2; \
+if ! $(call fake_root_cmd, \
+            $(bundle_fake_root_env), \
+            $(LIBC_CROSS_COMPILE)strip --strip-all "$$dst_binfile"); then \
+    echo 'bundle_bin: $$dst_binfile: strip failed.' >&2; \
 	exit 1; \
 fi
 endef
@@ -574,7 +576,9 @@ if ! $(call fake_root_cmd, \
 	echo 'bundle_lib: $(strip $(1)): install failed.' >&2; \
 	exit 1; \
 fi; \
-if ! $(LIBC_CROSS_COMPILE)strip --strip-unneeded "$$dst_sofile"; then \
+if ! $(call fake_root_cmd, \
+            $(bundle_fake_root_env), \
+            $(LIBC_CROSS_COMPILE)strip --strip-unneeded "$$dst_sofile"); then \
 	echo 'bundle_lib: $$dst_sofile: strip failed.' >&2; \
 	exit 1; \
 fi
