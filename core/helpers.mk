@@ -655,3 +655,18 @@ endef
 define mkpasswd
 $(strip $(if $(2),$(shell echo '$(2)' | mkpasswd --method='$(1)' --stdin)))
 endef
+
+# gentmpl() - Expand to a shell command suitable for generating content out of a
+#             template definition file and according to template configuration
+#             variables.'
+#
+# $(1): path to output file
+# $(2): path to template file
+# $(3): template configuration variable specification(s)
+#
+# See $(CRAFTER_SCRIPTDIR)/gentmpl.py help message for more infos about
+# configuration variable specification.
+define gentmpl
+$(call log_action,GENTMPL,$(1)); \
+$(CRAFTER_SCRIPTDIR)/gentmpl.py --output "$(strip $(1))" "$(strip $(2))" $(3)
+endef
