@@ -755,11 +755,18 @@ $(call _inspect_cmd, \
        show-$(1))
 endef
 
+# get_variable() - Expand to the value of the variable passed in argument.
+#
+# $(1): variable name
+define get_variable
+$(shell $(call _get_variable_cmd,$(1)))
+endef
+
 # show-variable-%: - Show value of a known public variable.
 #
 # If requested variable is undefined, display an empty string.
 show-variable-%:
-	@echo '$(shell $(call _get_variable_cmd,$(subst show-variable-,,$(@))))'
+	@echo '$(call get_variable,$(subst show-variable-,,$(@)))'
 
 # _platform_module_prereqs() - Expand to a list of prerequisites of module
 #                              recipes generating objects.
