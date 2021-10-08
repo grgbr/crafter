@@ -668,5 +668,5 @@ endef
 # configuration variable specification.
 define gentmpl
 $(call log_action,GENTMPL,$(1)); \
-$(CRAFTER_SCRIPTDIR)/gentmpl.py --output "$(strip $(1))" "$(strip $(2))" $(3)
+$(CRAFTER_SCRIPTDIR)/gentmpl.sh --output "$(strip $(1))" "$(strip $(2))" $(3)
 endef
