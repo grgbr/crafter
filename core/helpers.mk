@@ -43,6 +43,11 @@ $(empty)
 $(empty)
 endef
 
+# echoe - Expand to a shell command suitable for echo'ing with escape sequence
+#         interpretation enabled.
+#
+echoe := /bin/echo -e
+
 ################################################################################
 # Dying handlers
 ################################################################################
@@ -425,7 +430,7 @@ $(call log_action,ADDCRED,$(1)); \
 sed -i \
     '/^$(firstword $(subst :, ,$(strip $(2)))):.\+/d;/^[[:blank:]]*$$/d' \
     $(1) 2>/dev/null || true; \
-echo '$(strip $(2))' >> $(1)
+$(echoe) '$(strip $(subst $(newline),\n,$(2)))' >> $(1)
 endef
 
 # del_unix_cred_cmd() - Expand to a shell command suitable for removing
@@ -438,7 +443,7 @@ endef
 # with UNIX base system files as stated by group(5), passwd(5), gshadow(5) and
 # shadow(5) manual pages.
 define del_unix_cred_cmd
-$(call log_action,DELCRED,$(1))
+$(call log_action,DELCRED,$(1)); \
 sed -i \
     '/^$(firstword $(subst :, ,$(strip $(2)))):.\+/d;/^[[:blank:]]*$$/d' \
     $(1) 2>/dev/null || true
@@ -609,11 +614,6 @@ endef
 define upper
 $(shell echo '$(1)' | tr '[:lower:]' '[:upper:]')
 endef
-
-# echoe - Expand to a shell command suitable for echo'ing with escape sequence
-#         interpretation enabled.
-#
-echoe := /bin/echo -e
 
 # echo_multi_line_var_cmd() - Verbatim multiline content generation command list
 #
