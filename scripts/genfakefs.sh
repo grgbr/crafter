@@ -158,7 +158,8 @@ make_slink_cmd()
 	check_perms "symlink" "777" "$owner" "$group"
 
 	gen_log "link" "${out_dir}${dst_path}"
-	echo "ln -sf \"$target_path\" \"${out_dir}${dst_path}\";" \
+	echo "rm -f \"${out_dir}${dst_path}\";" \
+	     "ln -sf \"$target_path\" \"${out_dir}${dst_path}\";" \
 	     "chown -h $owner:$group \"${out_dir}${dst_path}\""
 }
 
@@ -270,7 +271,7 @@ Syntax must follow rules depicted below :
   file           file <name> <location> <mode> <uid> <gid>
   directory      dir <name> <mode> <uid> <gid>
   device node    nod <name> <mode> <uid> <gid> <dev_type> <maj> <min>
-  symbolic link  slink <name> <target> <mode> <uid> <gid>
+  symbolic link  slink <name> <target> <uid> <gid>
   pipe           pipe <name> <mode> <uid> <gid>
 
 Where :

@@ -57,7 +57,9 @@ if [ -f "$(strip $(3))" ] && [ -f "$(strip $(2))" ]; then \
 	fakeroot -s $(3) -i $(3) -- \
 		sh -ec \
 		"tac $(2) | awk '{ print \$$2 }' | while read entry; do \
-			if [ -d "$(strip $(1))/\$$entry" ]; then \
+			if [ -L "$(strip $(1))/\$$entry" ]; then \
+				rm -f "$(strip $(1))/\$$entry"; \
+			elif [ -d "$(strip $(1))/\$$entry" ]; then \
 				rmdir --ignore-fail-on-non-empty \
 				      "$(strip $(1))/\$$entry"; \
 			else \
