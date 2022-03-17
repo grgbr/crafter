@@ -640,8 +640,7 @@ endef
 # mkpasswd() - Expand to a shell command suitable for generating a passwd /
 #              shadow file password
 #
-# $(1): method used to encrypt the password (as expected by the crypt based
-#       mkpasswd utility)
+# $(1): options used by mkpasswd utility to encrypt the password.
 # $(2): the password to encrypt in clear text
 #
 # Password will generated in a way that is suitable for embedding it directly
@@ -653,7 +652,7 @@ endef
 #          string which, when used as an 'encrypted password' field will allow
 #          login with no password at all !
 define mkpasswd
-$(strip $(if $(2),$(shell echo '$(2)' | mkpasswd --method='$(1)' --stdin)))
+$(strip $(if $(2),$(shell echo '$(2)' | mkpasswd $(1) --stdin $(3))))
 endef
 
 # gentmpl() - Expand to a shell command suitable for generating content out of a
