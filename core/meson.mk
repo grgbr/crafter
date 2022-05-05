@@ -74,9 +74,10 @@ endef
 # meson_target_run() - Expand to a shell command allowing to run a Meson target
 #                      for current module.
 # $(1): meson target
-# $(2): arguments to invoke meson with
+# $(2): environment to run meson with
+# $(3): arguments to invoke meson with
 define meson_target_run
-$(MESON) $(1) -C $(module_builddir) $(2)
+env $(2) $(MESON) $(1) -C $(module_builddir) $(3)
 endef
 
 ################################################################################
