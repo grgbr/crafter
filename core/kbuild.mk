@@ -64,14 +64,15 @@ endef
 #
 # $(1): Kbuild compliant source tree
 # $(2): list of paths to config files to merge
-# $(3): Kbuild make arguments
+# $(3): Kbuild make config target
+# $(4): Kbuild make arguments
 define kbuild_merge_config_cmd
 $(call log_action,KMERGE,$(module_builddir)/.config); \
 $(if $(Q),$(foreach f,$(2),$(call log_action,,$(f));)) \
 cd $(module_builddir) && \
 $(CRAFTER_SCRIPTDIR)/kconfig_merge.sh -m .config $(2) $(redirect) && \
-$(MAKE) $(if $(Q),--quiet) -C $(1) olddefconfig \
-        $(verbosity) O:=$(module_builddir) $(3)
+$(MAKE) $(if $(Q),--quiet) -C $(1) $(3) \
+        $(verbosity) O:=$(module_builddir) $(4)
 endef
 
 # kbuild_saveconfig_cmd() - Expand to a shell command allowing to save current
