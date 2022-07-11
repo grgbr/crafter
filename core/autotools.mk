@@ -86,7 +86,7 @@ $(call log_action,ACONF,$(module_builddir)) && \
 cd $(module_builddir) && \
 $(1)/configure \
 	--with-sysroot=$(stagingdir) \
-	--cache=$(module_builddir)/autom4te.cache \
+	--cache-file=/dev/null \
 	$(if $(Q),--quiet) \
 	$(2)
 endef
@@ -104,7 +104,7 @@ $(call log_action,ACONF,$(module_builddir)) && \
 cd $(module_builddir) && \
 $(1)/configure \
 	--prefix=$(hostdir) \
-	--cache=$(module_builddir)/autom4te.cache \
+	--cache-file=/dev/null \
 	$(if $(Q),--quiet) \
 	$(2)
 endef
