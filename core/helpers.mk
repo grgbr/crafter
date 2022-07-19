@@ -669,3 +669,38 @@ define gentmpl
 $(call log_action,GENTMPL,$(1)); \
 $(PYTHON) $(CRAFTER_SCRIPTDIR)/gentmpl.py --output "$(strip $(1))" "$(strip $(2))" $(3)
 endef
+
+# help_list_files() - Print align full path from $(base root directory)
+#
+# $(1): base root directory
+# $(2): root directory
+# $(3): Files list
+define help_list_files
+$(foreach f,$(sort $(strip $(3))),$(newline)  $$($(strip $(1)))$(strip $(2))/$(patsubst /%,%,$(f)))
+endef
+
+# help_bundle_files() - Print align full path from $(bundle_rootdir)
+#
+# $(1): root directory
+# $(2): Files list
+define help_bundle_files
+$(call help_list_files,bundle_rootdir,$(strip $(1)),$(strip $(2)))
+endef
+
+# help_install_files() - Print align full path from $(stagindir)
+#
+# $(1): root directory
+# $(2): Files list
+define help_install_files
+$(call help_list_files,stagingdir,$(strip $(1)),$(strip $(2)))
+endef
+
+# help_render_vars() - Parse split variable and print it one shell arguments by
+#                      line.
+#
+# $(1): vars must be split
+define help_render_vars
+
+  .. code:: sh
+$(shell split() { for i in "$$@"; do printf '\\n     %s' "$$i"; done; }; split $(1))
+endef

@@ -422,58 +422,136 @@ endif # ($(TARGET_PLATFORM),)
 # Platform independent targets
 ################################################################################
 
+
+# FORMAT_HELP - Function called to print help message
+#
+# Default case, just echo a multiline text
+# Can setup by end user to use formatter like Pandoc.
+# Sample:
+#   define echo_rst_to_plain_cmd
+#   $(call echo_multi_line_var_cmd,$(1)) | pandoc -s -f rst -t plain
+#   endef
+#   FORMAT_HELP := echo_rst_to_plain_cmd
+FORMAT_HELP ?= echo_multi_line_var_cmd
+
 # help_short_message - The default short help message
 define help_short_message
-===== Build usage =====
+================================================================================
+BUILD_USAGE(1) $(VERSION) | $(@)
+================================================================================
 
-::Main targets:: Applicable to all platforms
-  list-boards              -- display available build\'able boards
-  list-<BOARD>-flavours    -- display build flavours available for BOARD
-  list-modules             -- display all known modules
+:Author:
+:Date:
 
-  show-platform            -- display default platform tuple
-  select-<BOARD>-<FLAVOUR> -- setup default platform using BOARD / FLAVOUR tuple
-  unselect-platform        -- disable default platform setup
+Targets
+=======
 
-  help                     -- a short help message
-  help-full                -- a more complete help message
+Main targets
+------------
+Applicable to all platforms
 
+list-boards
+  display available build\'able boards
 
-::Platform targets:: Applicable to default platform only !
-  all                      -- construct all modules
-  clobber                  -- remove all generated objects
-  show-modules             -- display modules the default platform depends on
-  list-variables           -- display a list of known public platform variables
-  show-variable-<VARIABLE> -- display value of a known public platform variable
+list-<BOARD>-flavours
+  display build flavours available for **BOARD**
 
+list-modules
+  display all known modules
 
-::Module targets:: Applicable to MODULE and default platform only !
-  <MODULE>                 -- construct
+show-platform
+  display default platform tuple
 
-  defconfig-<MODULE>       -- setup default construction configuration (forced)
-  saveconfig-<MODULE>      -- save current construction configuration  (forced)
-  guiconfig-<MODULE>       -- run the GUI construction configurator    (forced)
-  config-<MODULE>          -- configure construction                   (forced)
+select-<BOARD>-<FLAVOUR>
+  setup default platform using **BOARD** / **FLAVOUR** tuple
 
-  build-<MODULE>           -- build intermediate objects               (forced)
-  install-<MODULE>         -- install final objects                    (forced)
-  bundle-<MODULE>          -- install deliverable objects              (forced)
+unselect-platform
+  disable default platform setup
 
-  drop-<MODULE>            -- remove bundled objects
-  uninstall-<MODULE>       -- drop-<MODULE> + remove staged objects
-  clean-<MODULE>           -- uninstall-<MODULE> + remove intermediate objects
-  clobber-<MODULE>         -- remove all generated objects
+help
+  a short help message
 
-  help-<MODULE>            -- display help message
+help-full
+  a more complete help message
 
 
-::Where::
-  BOARD       -- a platform board as listed by the list-boards target
-  FLAVOUR     -- a board specific build flavour as listed by the
-                 list-<BOARD>-flavours target
-  MODULE      -- a default platform MODULE as listed by the show-modules target
-  VARIABLE    -- a public variable known to the default platform as listed by
-                 the list-variables target
+Platform targets
+----------------
+Applicable to default platform only !
+
+all                      
+  construct all modules
+
+clobber                  
+  remove all generated objects
+
+show-modules             
+  display modules the default platform depends on
+
+list-variables           
+  display a list of known public platform variables
+
+show-variable-<VARIABLE> 
+  display value of a known public platform variable
+
+Module targets
+--------------
+Applicable to **MODULE** and default platform only !
+
+<MODULE>
+  construct
+
+defconfig-<MODULE>
+  setup default construction configuration **(forced)**
+
+saveconfig-<MODULE>      
+  save current construction configuration  **(forced)**
+
+guiconfig-<MODULE>       
+  run the GUI construction configurator    **(forced)**
+
+config-<MODULE>          
+  configure construction                   **(forced)**
+
+build-<MODULE>           
+  build intermediate objects               **(forced)**
+
+install-<MODULE>         
+  install final objects                    **(forced)**
+
+bundle-<MODULE>          
+  install deliverable objects              **(forced)**
+
+drop-<MODULE>            
+  remove bundled objects
+
+uninstall-<MODULE>       
+  *drop-<MODULE>* + remove staged objects
+
+clean-<MODULE>           
+  *uninstall-<MODULE>* + remove intermediate objects
+
+clobber-<MODULE>         
+  remove all generated objects
+
+help-<MODULE>            
+  display help message
+
+Where
+=====
+
+BOARD
+  a platform board as listed by the *list-boards* target
+
+FLAVOUR
+  a board specific build flavour as listed by the *list-<BOARD>-flavours* target
+
+MODULE
+  a default platform **MODULE** as listed by the *show-modules* target
+
+VARIABLE
+  a public variable known to the default platform as listed by the
+  *list-variables* target
 endef
 
 # help: - Top level short help target.
@@ -487,46 +565,72 @@ endef
 .PHONY: help
 help: SHELL := /bin/bash
 help:
-	@$(call echo_multi_line_var_cmd,$(help_short_message))
+	@$(call $(FORMAT_HELP),$(help_short_message))
 
 define help_full_message
 $(help_short_message)
 
+Areas
+=====
+build
+  directory under which intermediate built objects will be generated
 
-::Areas::
-  build       -- directory under which intermediate built objects will be
-                 generated
-                 [$$(OUTDIR)/<BOARD>/<FLAVOUR>/build/<MODULE>/]
-  staging     -- directory under which final platform objects will be installed
-                 [$$(OUTDIR)/<BOARD>/<FLAVOUR>/staging/]
-  bundle      -- directory under which platform deliverables will be bundled
-                 [$$(OUTDIR)/<BOARD>/<FLAVOUR>/]
+  .. code:: sh
 
+     $$(OUTDIR)/<BOARD>/<FLAVOUR>/build/<MODULE>/
 
-::Variables::
-  TARGET_PLATFORM -- override default platform using a tuple of the form:
-                     <BOARD>-<FLAVOUR> ; cannot be mixed with explicit
-                     TARGET_BOARD and / or TARGET_FLAVOUR definitions
-  TARGET_BOARD    -- override default platform board ; in addition,
-                     TARGET_FLAVOUR MUST also be defined
-  TARGET_FLAVOUR  -- override default platform flavour ; in additon,
-                     TARGET_BOARD MUST also be defined
-  OUTDIR          -- directory path under which all crafter generated objects
-                     will be located
-                     [$(OUTDIR)]
-  PLATFORMDIR     -- directory path under which crafter user / platform specific
-                     logic is located
-                     [$(PLATFORMDIR)]
-  MODULEDIR       -- directory path under which user / platform module
-                     implementation makefiles are seached for
-                     [$(MODULEDIR)]
-  CRAFTERDIR      -- directory path under which crafter logic is located
-                     [$(CRAFTERDIR)]
-  CONFIGDIR       -- directory path under which end-user customization files are
-                     searched for
-                     [$(CONFIGDIR)]
-  V               -- crafter verbosity setting
-                     0 => quiet build (default), 1 => verbose build
+staging
+  directory under which final platform objects will be installed
+
+  .. code:: sh
+
+     $$(OUTDIR)/<BOARD>/<FLAVOUR>/staging/
+
+bundle
+  directory under which platform deliverables will be bundled
+
+  .. code:: sh
+
+     $$(OUTDIR)/<BOARD>/<FLAVOUR>/
+
+Variables
+=========
+TARGET_PLATFORM
+  override default platform using a tuple of the form: <**BOARD**>-<**FLAVOUR**>; 
+  cannot be mixed with explicit **TARGET_BOARD** and / or **TARGET_FLAVOUR**
+  definitions
+
+TARGET_BOARD
+  override default platform board ; in addition, **TARGET_FLAVOUR** MUST also
+  be defined
+
+TARGET_FLAVOUR
+  override default platform flavour ; in additon, **TARGET_BOARD** MUST also
+  be defined
+
+OUTDIR
+  directory path under which all crafter generated objects will be located
+  $(call help_render_vars, $(OUTDIR))
+
+PLATFORMDIR
+  directory path under which crafter user / platform specific logic is located
+  $(call help_render_vars, $(PLATFORMDIR))
+
+MODULEDIR
+  directory path under which user / platform module implementation makefiles are
+  seached for
+  $(call help_render_vars, $(MODULEDIR))
+
+CRAFTERDIR
+  directory path under which core crafter logic is located
+  $(call help_render_vars, $(CRAFTERDIR))
+
+CONFIGDIR
+  directory path under which end-user configuration files are searched for
+  $(call help_render_vars, $(CONFIGDIR))
+
+V
+  crafter verbosity setting 0 => quiet build (default), 1 => verbose build
 endef
 
 # help-full: - Top level full help target.
@@ -540,7 +644,7 @@ endef
 .PHONY: help-full
 help-full: SHELL := /bin/bash
 help-full:
-	@$(call echo_multi_line_var_cmd,$(help_full_message))
+	@$(call $(FORMAT_HELP),$(help_full_message))
 
 # list-boards: - display a list of build'able boards
 #
@@ -689,27 +793,41 @@ endef
 # recommended to setup a target specific SHELL variable to bash for targets
 # using this macro.
 define _module_help_cmd
-@echo          '===== $(1) module help ====='
-@echo
-@$(if $(call _module_help_msg,$(1)), \
-      $(echoe) $$'$(call _module_help_msg,$(1))', \
-      echo     'No help provided.')
-@echo
-@echo          '::Dependencies::'
-@$(if $(call _list_module_depends,$(1)), \
-      $(call _indent_and_break_words_cmd, \
-             $(sort $(call _list_module_depends,$(1)))), \
-      echo     '  none')
-@echo
-@echo          '::Areas::'
-@echo          '  $$(hostdir)/        -- Path to host tools directory'
-@echo          '                        [$(hostdir)]'
-@echo          '  $$(stagingdir)/     -- Path to target objects directory'
-@echo          '                        [$(stagingdir)]'
-@echo          '  $$(bundledir)/      -- Path to target deliverables directory'
-@echo          '                        [$(bundledir)]'
-@echo          '  $$(bundle_rootdir)/ -- Path to target root FS hierarchy'
-@echo          '                        [$(bundle_rootdir)]'
+================================================================================
+$(call upper,$(1))(1) $(VERSION) | $(1)
+================================================================================
+
+:Author:
+:Date:
+
+Description
+===========
+$(if $(call _module_help_msg,$(1)),$(call _module_help_msg,$(1)),No help provided.)
+
+Dependencies
+============
+$(if $(call _list_module_depends,$(1)),$(shell \
+  $(call _break_words_cmd,$(sort $(call _list_module_depends,$(1))))) \
+  ,none)
+
+Areas
+=====
+$$(hostdir)/
+  Path to host tools directory
+  $(call help_render_vars, $(hostdir))
+
+$$(stagingdir)/
+  Path to target objects directory
+  $(call help_render_vars, $(stagingdir))
+
+$$(bundledir)/
+  Path to target deliverables directory
+  $(call help_render_vars, $(bundledir))
+
+$$(bundle_rootdir)/
+  Path to target root FS hierarchy
+  $(call help_render_vars, $(bundle_rootdir))
+
 endef
 
 # help-<module>: - Module display targets.
@@ -724,7 +842,7 @@ _module_help_targets := $(addprefix help-,$(_platform_modules))
 .PHONY: $(_module_help_targets)
 $(_module_help_targets): SHELL := /bin/bash
 $(_module_help_targets):
-	$(call _module_help_cmd,$(subst help-,,$(@)))
+	@$(call $(FORMAT_HELP),$(call _module_help_cmd,$(subst help-,,$(@))))
 
 # show-modules: - Target displaying a list of modules supported by the current
 #                 platform.

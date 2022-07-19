@@ -45,6 +45,7 @@ list-module-depends:
 # show-module-help: - Target formating the module help message so that the
 #                     latter can be fed to an echo command without loosing
 #                     newlines.
+show-module-help: SHELL=/bin/bash
 show-module-help:
 	$(if $(module_help),$(info $(subst $(newline),\n,$(module_help))))
 
