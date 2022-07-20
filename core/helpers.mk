@@ -615,6 +615,14 @@ define upper
 $(shell echo '$(1)' | tr '[:lower:]' '[:upper:]')
 endef
 
+# title_underline() - Convert string to underline with same size
+#
+# $(1): string
+# $(2): char   - char ' and / are forbidden 
+define title_underline
+$(shell echo '$(1)' | sed 's/./$(2)/g')
+endef
+
 # echo_multi_line_var_cmd() - Verbatim multiline content generation command list
 #
 # $(1): multiline string

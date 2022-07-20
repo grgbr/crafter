@@ -437,9 +437,9 @@ FORMAT_HELP ?= echo_multi_line_var_cmd
 
 # help_short_message - The default short help message
 define help_short_message
-================================================================================
+$(call title_underline,BUILD_USAGE(1) $(VERSION) | $(@),=)
 BUILD_USAGE(1) $(VERSION) | $(@)
-================================================================================
+$(call title_underline,BUILD_USAGE(1) $(VERSION) | $(@),=)
 
 :Author:
 :Date:
@@ -794,9 +794,9 @@ endef
 # recommended to setup a target specific SHELL variable to bash for targets
 # using this macro.
 define _module_help_cmd
-================================================================================
+$(call title_underline,$(call upper,$(1))(1) $(VERSION) | $(1),=)
 $(call upper,$(1))(1) $(VERSION) | $(1)
-================================================================================
+$(call title_underline,$(call upper,$(1))(1) $(VERSION) | $(1),=)
 
 :Author:
 :Date:
