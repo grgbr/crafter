@@ -145,7 +145,7 @@ endef
 # See crafter core inspection makefile $(CRAFTERDIR)/core/inspect.mk for more
 # infos.
 define _inspect_cmd
-$(MAKE) --silent \
+$(MAKE) --no-print-directory \
         --makefile=$(CRAFTERDIR)/core/inspect.mk \
         TOPDIR:=$(TOPDIR) \
         CONFIGDIR:=$(CONFIGDIR) \

@@ -22,8 +22,10 @@ ifdef V
 verbosity := V=$(V)
 else
 Q         := @
-MAKEFLAGS += --no-print-directory
 redirect  := >/dev/null
+ifeq (,$(filter --no-print-directory,$(MAKEFLAGS)))
+MAKEFLAGS += --no-print-directory
+endif
 endif
 
 ################################################################################
