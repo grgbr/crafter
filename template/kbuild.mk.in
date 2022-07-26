@@ -1,0 +1,239 @@
+## Setup Cheetah compiler placeholder delimiter to '@' instead of the default
+## '$' to prevent from conflicting with makefile syntax.
+#compiler-settings
+cheetahVarStartToken = @
+#end compiler-settings
+## Lines up to (and including) this one will get discarded from final output.
+#set @module = @getVar('MODULE')
+#set @MODULE = @module.upper()
+include $(CRAFTERDIR)/core/module.mk
+include $(CRAFTERDIR)/core/kbuild.mk
+
+# Module depends
+$(call gen_module_depends,)
+
+# Interrupt processing if platform specified no source tree.
+$(call dieon_undef_or_empty,@(MODULE)_SRCDIR)
+# Interrupt processing if platform specified no toolchain.
+$(call dieon_undef_or_empty,@(MODULE)_TARGET_MAKE_ARGS)
+# Interrupt processing if platform specified no target architecture.
+$(call dieon_undef_or_empty,@(MODULE)_ARCH)
+# Interrupt processing if platform specified no default build configuration.
+$(call dieon_undef_or_empty,@(MODULE)_DEFCONFIG_FILE)
+
+@(module)_cflags  := $(@(MODULE)_CFLAGS) -I$(stagingdir)/usr/include
+@(module)_ldflags := $(@(MODULE)_LDFLAGS) -L$(stagingdir)/lib
+
+# Additional @(module) specific make arguments given to kbuild commands
+@(module)_make_args := ARCH:=$(@(MODULE)_ARCH) \
+                     $(@(MODULE)_TARGET_MAKE_ARGS) \
+                     EXTRA_CFLAGS:="$(@(module)_cflags)" \
+                     EXTRA_LDFLAGS:="$(@(module)_ldflags)"
+
+define @(module)_make_cmd
+$(call kbuild_make_cmd,$(@(MODULE)_SRCDIR),$(1),$(@(module)_make_args) $(2))
+endef
+
+#raw
+################################################################################
+# This module help message
+################################################################################
+#end raw
+
+define module_help
+Build and install @(module), a ...
+
+Source
+======
+  https://...
+
+Configuration variables
+=======================
+@(MODULE)_SRCDIR
+  Path to @(module) source tree root directory
+  $(call help_render_vars, $(@(MODULE)_SRCDIR))
+
+@(MODULE)_TARGET_MAKE_ARGS
+  Path to @(module) cross compiling tool chain
+  $(call help_render_vars, $(@(MODULE)_TARGET_MAKE_ARGS))
+
+@(MODULE)_ARCH
+  @(module) architecture to build for
+  $(call help_render_vars, $(@(MODULE)_ARCH))
+
+@(MODULE)_CFLAGS
+  Optional extra CFLAGS passed to @(module) compile process
+  $(call help_render_vars, $(@(MODULE)_CFLAGS))
+
+@(MODULE)_LDFLAGS
+  Optional extra LDFLAGS passed to @(module) link process
+  $(call help_render_vars, $(@(MODULE)_LDFLAGS))
+
+@(MODULE)_DEFCONFIG_FILE
+  Default @(module) build configuration file path
+  $(call help_render_vars, $(@(MODULE)_DEFCONFIG_FILE))
+
+@(MODULE)_CONFIG_FILES 
+  Additional @(module) build configuration files merged with current configuration
+  $(call help_render_vars, $(@(MODULE)_CONFIG_FILES))
+
+@(MODULE)_PLATFORM_HELP 
+  Platform specific help message
+$(@(MODULE)_PLATFORM_HELP)
+
+Installed
+=========
+binary::
+$(call help_install_files,/bin,@(module))
+
+Shared library::
+$(call help_install_files,/lib,lib@(module).so)
+
+Bundled
+=======
+binary::
+$(call help_bundle_files,/bin,@(module))
+
+Shared library::
+$(call help_bundle_files,/lib,lib@(module).so)
+endef
+
+#raw
+################################################################################
+# Configure logic
+################################################################################
+#end raw
+
+define @(module)_defconfig_recipe
++$(Q)$(call kbuild_config_cmd, \
+            $(@(MODULE)_SRCDIR), \
+            $(@(MODULE)_DEFCONFIG), \
+            $(@(module)_make_args))
+endef
+
+define @(module)_merge_config_recipe
++$(Q)$(call kbuild_merge_config_cmd, \
+            $(@(MODULE)_SRCDIR), \
+            $(wildcard $(@(MODULE)_CONFIG_FILES)), \
+            oldconfig, \
+            $(@(module)_make_args))
+endef
+
+define @(module)_saveconfig_recipe
+$(Q)$(call kbuild_saveconfig_cmd, \
+            $(@(MODULE)_SRCDIR), \
+            $(@(module)_make_args))
+endef
+
+define @(module)_guiconfig_recipe
++$(Q)$(call kbuild_guiconfig_cmd, \
+            $(@(MODULE)_SRCDIR), \
+            $(@(module)_make_args))
+endef
+
+$(call kbuild_gen_config_rules, \
+       $(@(MODULE)_CONFIG_FILES), \
+       @(module)_defconfig_recipe, \
+       @(module)_merge_config_recipe, \
+       @(module)_saveconfig_recipe, \
+       @(module)_guiconfig_recipe)
+
+#raw
+################################################################################
+# Build logic
+################################################################################
+#end raw
+
+define @(module)_build_recipe
++$(Q)$(call @(module)_make_cmd,all)
+endef
+
+$(call kbuild_gen_build_rule,@(module)_build_recipe)
+
+#raw
+################################################################################
+# Clean logic
+################################################################################
+#end raw
+
+ifeq ($(kbuild_configured),y)
+
+define @(module)_clean_recipe
++$(Q)$(call @(module)_make_cmd,clean)
+endef
+
+$(call kbuild_gen_clean_rule,@(module)_clean_recipe)
+
+endif
+
+#raw
+################################################################################
+# Install logic
+################################################################################
+#end raw
+
+define @(module)_install_recipe
++$(Q)$(call @(module)_make_cmd,install,CONFIG_PREFIX:=$(stagingdir))
+endef
+
+$(call kbuild_gen_install_rule,@(module)_install_recipe)
+
+#raw
+################################################################################
+# Uninstall logic
+################################################################################
+#end raw
+
+ifeq ($(kbuild_configured),y)
+
+define @(module)_uninstall_recipe
++$(Q)$(call @(module)_make_cmd,uninstall,CONFIG_PREFIX:=$(stagingdir))
+endef
+
+$(call kbuild_gen_uninstall_rule,@(module)_uninstall_recipe)
+
+endif
+
+#raw
+################################################################################
+# Bundle logic
+################################################################################
+#end raw
+
+define @(module)_bundle_recipe
++$(Q)$(call fake_root_cmd, \
+            $(bundle_fake_root_env), \
+            $(call @(module)_make_cmd,install,CONFIG_PREFIX:=$(bundle_rootdir)))
+endef
+
+$(call kbuild_gen_bundle_rule,@(module)_bundle_recipe)
+
+#raw
+################################################################################
+# Drop logic
+################################################################################
+#end raw
+
+ifeq ($(kbuild_configured),y)
+
+define @(module)_drop_recipe
++$(Q)$(call fake_root_cmd, \
+            $(bundle_fake_root_env), \
+            $(call @(module)_make_cmd,uninstall,CONFIG_PREFIX:=$(bundle_rootdir)))
+endef
+
+$(call kbuild_gen_drop_rule,@(module)_drop_recipe)
+
+endif
+
+#raw
+################################################################################
+# Various build native targets
+################################################################################
+#end raw
+
+define @(module)_native_recipe
++$(Q)$(call @(module)_make_cmd,$(1))
+endef
+
+$(call kbuild_gen_native_rules,@(module)_native_recipe)

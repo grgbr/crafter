@@ -1,0 +1,170 @@
+## Setup Cheetah compiler placeholder delimiter to '@' instead of the default
+## '$' to prevent from conflicting with makefile syntax.
+#compiler-settings
+cheetahVarStartToken = @
+#end compiler-settings
+## Lines up to (and including) this one will get discarded from final output.
+#set @module = @getVar('MODULE')
+#set @MODULE = @module.upper()
+include $(CRAFTERDIR)/core/module.mk
+include $(CRAFTERDIR)/core/cmake.mk
+
+# Module depends
+$(call gen_module_depends, )
+
+# Interrupt processing if platform specified no source tree.
+$(call dieon_undef_or_empty,@(MODULE)_SRCDIR)
+# Interrupt processing if platform specified no cmake arguments.
+$(call dieon_undef_or_empty,@(MODULE)_TARGET_CMAKE_ARGS)
+# Interrupt processing if platform specified no make arguments.
+$(call dieon_undef_or_empty,@(MODULE)_TARGET_MAKE_ARGS)
+
+@(module)_make_cmd = $(call cmake_target_make,$(1),$(@(MODULE)_TARGET_MAKE_ARGS)  $(2))
+
+# Location of staged.
+@(module)_staging_dir := $(abspath $(stagingdir)$(@(MODULE)_TARGET_PREFIX))
+
+# Location of bundled.
+@(module)_bundle_dir := $(bundle_rootdir)$(@(MODULE)_TARGET_PREFIX)
+
+#raw
+################################################################################
+# This module help message
+################################################################################
+#end raw
+
+define module_help
+Build and install @(module), a ...
+
+Source
+======
+  https://...
+
+Configuration variable
+======================
+@(MODULE)_SRCDIR
+  Path to source directory tree
+  $(call help_render_vars,$(@(MODULE)_SRCDIR))
+
+@(MODULE)_TARGET_PREFIX
+  Path to architecture-independent files install root directory
+  $(call help_render_vars,$(@(MODULE)_TARGET_PREFIX))
+
+@(MODULE)_TARGET_CMAKE_ARGS
+  Arguments passed to cmake tool at configure time
+  $(call help_render_vars,$(@(MODULE)_TARGET_CMAKE_ARGS))
+
+@(MODULE)_TARGET_MAKE_ARGS
+  Arguments passed to make at build / install time
+  $(call help_render_vars,$(@(MODULE)_TARGET_MAKE_ARGS))
+
+Installed
+=========
+binary::
+$(call help_install_files,$(@(MODULE)_TARGET_PREFIX)/bin,@(module))
+
+Shared library::
+$(call help_install_files,$(@(MODULE)_TARGET_PREFIX)/lib,lib@(module).so)
+
+Bundled
+=======
+binary::
+$(call help_bundle_files,$(@(MODULE)_TARGET_PREFIX)/bin,@(module))
+
+Shared library::
+$(call help_bundle_files,$(@(MODULE)_TARGET_PREFIX)/lib,lib@(module).so)
+endef
+
+#raw
+################################################################################
+# Configuration logic
+################################################################################
+#end raw
+
+define @(module)_configure_recipe
+$(Q)$(call cmake_target_configure, \
+           $(@(MODULE)_SRCDIR), \
+           $(@(MODULE)_TARGET_CMAKE_ARGS))
+endef
+
+$(call cmake_gen_config_rule,@(module)_configure_recipe)
+
+#raw
+################################################################################
+# Build logic
+################################################################################
+#end raw
+
+define @(module)_build_recipe
++$(Q)$(call @(module)_make_cmd,all)
+endef
+
+$(call cmake_gen_build_rule,@(module)_build_recipe)
+
+#raw
+################################################################################
+# Clean logic
+################################################################################
+#end raw
+
+define @(module)_clean_recipe
++$(Q)$(call @(module)_make_cmd,clean)
+endef
+
+$(call cmake_gen_clean_rule,@(module)_clean_recipe)
+
+#raw
+################################################################################
+# Install logic
+################################################################################
+#end raw
+
+define @(module)_install_recipe
++$(Q)$(call @(module)_make_cmd,install)
+endef
+
+$(call cmake_gen_install_rule,@(module)_install_recipe)
+
+#raw
+################################################################################
+# Uninstall logic
+################################################################################
+#end raw
+
+define @(module)_uninstall_recipe
+-+$(Q)$(call @(module)_make_cmd,uninstall)
+endef
+
+$(call cmake_gen_uninstall_rule,@(module)_uninstall_recipe)
+
+#raw
+################################################################################
+# Bundle logic
+################################################################################
+#end raw
+
+define @(module)_bundle_recipe
+$(Q)$(call bundle_bin_cmd, \
+           $(@(module)_staging_dir)/bin/@(module), \
+           $(bundle_rootdir)/bin)
+$(Q)$(call bundle_lib_cmd, \
+           $(@(module)_staging_dir)/lib/lib@(module).so, \
+           $(bundle_rootdir)/lib)
+endef
+
+$(call cmake_gen_bundle_rule,@(module)_bundle_recipe)
+
+#raw
+################################################################################
+# Drop logic
+################################################################################
+#end raw
+
+define @(module)_drop_recipe
+$(Q)$(call drop_cmd,$(@(module)_bundle_dir)/bin/@(module))
+$(Q)$(call drop_lib_cmd, \
+           $(stagingdir)/lib/lib@(module).so, \
+           $(@(module)_bundle_dir)/lib)
+endef
+
+$(call cmake_gen_drop_rule,@(module)_drop_recipe)

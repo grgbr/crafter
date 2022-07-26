@@ -1,0 +1,132 @@
+## Setup Cheetah compiler placeholder delimiter to '@' instead of the default
+## '$' to prevent from conflicting with makefile syntax.
+#compiler-settings
+cheetahVarStartToken = @
+#end compiler-settings
+## Lines up to (and including) this one will get discarded from final output.
+#set @module = @getVar('MODULE')
+#set @MODULE = @module.upper()
+include $(CRAFTERDIR)/core/module.mk
+include $(CRAFTERDIR)/core/fakefs.mk
+
+# Module depends
+$(call gen_module_depends, )
+
+# Interrupt processing if platform specified no ...
+# $(call dieon_undef_or_empty,@(MODULE)_)
+
+#raw
+################################################################################
+# This module help message
+################################################################################
+#end raw
+
+define module_help
+Generate filesystem skeleton...
+
+Configuration variables
+=======================
+@(MODULE)_
+  A ...
+  $(call help_render_vars,$(@(MODULE)_))
+
+Installed
+=========
+Files system::
+$(call help_install_files,,)
+
+Bundled
+=======
+Files system::
+$(call help_bundle_files,,)
+endef
+
+#raw
+################################################################################
+# Build logic
+################################################################################
+#end raw
+
+
+define @(module)_spec
+# A simple example
+dir   /                                       755 0 0
+dir   /dev                                    755 0 0
+nod   /dev/console                            600 0 0 c 5 1
+dir   /sbin                                   755 0 0
+file  /sbin/kinit /usr/src/klibc/kinit/kinit  755 0 0
+dir   /tmp                                   1777 0 0
+pipe  /tmp/fifo                               600 0 0
+dir   /var                                    755 0 0
+slink /var/tmp /tmp                               0 0
+endef
+
+$(build_target): $(module_builddir)/fstable.txt
+
+# We need an advanced shell for the build recipe. See usage of gen_fstable_cmd()
+# macro into _ubifs_rules().
+$(module_builddir)/fstable.txt: SHELL := /bin/bash
+
+# Make sure filesystem table is generated on dependency modules changes
+$(module_builddir)/fstable.txt:  $(CRAFTERDIR)/core/fakefs.mk \
+                                 $(module_prereqs) \
+                                 | $(module_builddir)
+	$(Q)$(call gen_fstable_cmd,$(@),@(module)_spec)
+	\@touch $(@)
+
+#raw
+################################################################################
+# clean logic
+################################################################################
+#end raw
+
+clean:
+	$(Q)$(call rmrf_cmd,$(module_builddir))
+
+#raw
+################################################################################
+# Install logic
+################################################################################
+#end raw
+
+$(install_target): $(build_target)
+	\@touch $(@)
+
+#raw
+################################################################################
+# Uninstall logic
+################################################################################
+#end raw
+
+uninstall:
+
+#raw
+################################################################################
+# Bundle logic
+################################################################################
+#end raw
+
+# Note: the last argument given to gen_fakefs_cmd() is unused here since
+# @(module)_spec macro contains no 'file' directive.
+# As gen_fakefs_cmd() macro requires one however, make it happy by giving it
+# $(module_builddir).
+$(bundle_target): $(module_builddir)/fstable.txt $(install_target) \
+                  | $(bundle_rootdir)
+	$(Q)$(call gen_fakefs_cmd, \
+	           $(bundle_rootdir), \
+	           $(<), \
+	           $(bundle_fake_root_env), \
+	           $(module_builddir))
+	\@touch $(@)
+
+#raw
+################################################################################
+# Drop logic
+################################################################################
+#end raw
+
+drop:
+	$(Q)$(call clean_fakefs_cmd, \
+	           $(bundle_rootdir), \
+	           $(module_builddir)/fstable.txt, \
+	           $(bundle_fake_root_env))

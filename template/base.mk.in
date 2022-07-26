@@ -1,0 +1,155 @@
+## Setup Cheetah compiler placeholder delimiter to '@' instead of the default
+## '$' to prevent from conflicting with makefile syntax.
+#compiler-settings
+cheetahVarStartToken = @
+#end compiler-settings
+## Lines up to (and including) this one will get discarded from final output.
+#set @module = @getVar('MODULE')
+#set @MODULE = @module.upper()
+include $(CRAFTERDIR)/core/module.mk
+
+# This module dependencies...
+$(call gen_module_depends, )
+
+# Interrupt processing if platform specified no source tree.
+$(call dieon_undef_or_empty,@(MODULE)_SRCDIR)
+# Interrupt processing if platform specified no cross compiling prefix.
+$(call dieon_undef_or_empty,@(MODULE)_CROSS_COMPILE)
+# Interrupt processing if platform specified no build make arguments.
+$(call dieon_undef_or_empty,@(MODULE)_TARGET_MAKE_ARGS)
+
+# @(module) make invocation macro.
+@(module)_target_args := $(@(MODULE)_TARGET_MAKE_ARGS)
+
+@(module)_make_cmd = $(MAKE) --directory=$(module_builddir) $(@(module)_target_args)
+
+# Location of staged.
+@(module)_staging_dir := $(abspath $(stagingdir)$(@(MODULE)_TARGET_PREFIX))
+
+# Location of bundled.
+@(module)_bundle_dir := $(bundle_rootdir)$(@(MODULE)_TARGET_PREFIX)
+
+#raw
+################################################################################
+# This module help message
+################################################################################
+#end raw
+
+define module_help
+Build and install @(module), a ...
+
+Source
+======
+  https://...
+
+Configuration variable
+======================
+@(MODULE)_SRCDIR
+  Path to source directory tree
+  $(call help_render_vars,$(@(MODULE)_SRCDIR))
+
+@(MODULE)_TARGET_PREFIX
+  Path to architecture-independent files install root directory
+  $(call help_render_vars,$(@(MODULE)_TARGET_PREFIX))
+
+@(MODULE)_CROSS_COMPILE
+  Cross compiling tool chain prefix
+  $(call help_render_vars,$(@(MODULE)_CROSS_COMPILE))
+
+@(MODULE)_TARGET_MAKE_ARGS
+  Arguments passed to make tool
+  $(call help_render_vars,$(@(MODULE)_TARGET_MAKE_ARGS))
+
+Installed
+=========
+binary::
+$(call help_install_files,$(@(MODULE)_TARGET_PREFIX)/bin,@(module))
+
+Shared library::
+$(call help_install_files,$(@(MODULE)_TARGET_PREFIX)/lib,lib@(module).so)
+
+Bundled
+=======
+binary::
+$(call help_bundle_files,$(@(MODULE)_TARGET_PREFIX)/bin,@(module))
+
+Shared library::
+$(call help_bundle_files,$(@(MODULE)_TARGET_PREFIX)/lib,lib@(module).so)
+endef
+
+#raw
+################################################################################
+# Configure logic
+################################################################################
+#end raw
+
+# Mirror src if @(module) not support build directory
+$(config_target):
+	$(Q)$(call mirror_cmd,--delete $(@(MODULE)_SRCDIR)/,$(module_builddir))
+	\@touch $(@)
+
+#raw
+################################################################################
+# Build logic
+################################################################################
+#end raw
+
+$(build_target):
+	+$(Q)$(@(module)_make_cmd) all
+	\@touch $(@)
+
+#raw
+################################################################################
+# Clean logic
+################################################################################
+#end raw
+
+clean:
+	+$(Q)$(@(module)_make_cmd) clean
+
+#raw
+################################################################################
+# Install logic
+################################################################################
+#end raw
+
+$(install_target):
+	+$(Q)$(@(module)_make_cmd) install DESTDIR:="$(stagingdir)"
+	\@touch $(@)
+
+#raw
+################################################################################
+# Uninstall logic
+################################################################################
+#end raw
+
+uninstall:
+	+$(Q)$(@(module)_make_cmd) uninstall DESTDIR:="$(stagingdir)"
+	$(Q)$(call rmrf_cmd,$(module_installdir))
+
+#raw
+################################################################################
+# Bundle logic
+################################################################################
+#end raw
+
+$(bundle_target):
+	$(Q)$(call bundle_bin_cmd, \
+	           $(@(module)_staging_dir)/bin/@(module), \
+	           $(bundle_rootdir)/bin)
+	$(Q)$(call bundle_lib_cmd, \
+	           $(@(module)_staging_dir)/lib/lib@(module).so, \
+	           $(bundle_rootdir)/lib)
+	\@touch $(@)
+
+#raw
+################################################################################
+# Drop logic
+################################################################################
+#end raw
+
+drop:
+	$(Q)$(call drop_cmd,$(@(module)_bundle_dir)/bin/@(module))
+	$(Q)$(call drop_lib_cmd, \
+	           $(stagingdir)/lib/lib@(module).so, \
+	           $(@(module)_bundle_dir)/lib)

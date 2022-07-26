@@ -1,0 +1,214 @@
+## Setup Cheetah compiler placeholder delimiter to '@' instead of the default
+## '$' to prevent from conflicting with makefile syntax.
+#compiler-settings
+cheetahVarStartToken = @
+#end compiler-settings
+## Lines up to (and including) this one will get discarded from final output.
+#set @module = @getVar('MODULE')
+#set @MODULE = @module.upper()
+include $(CRAFTERDIR)/core/module.mk
+include $(CRAFTERDIR)/core/ebuild.mk
+
+# Module depends
+$(call gen_module_depends, )
+
+# Ebuild Base variable depends
+$(call dieon_undef_or_empty,@(MODULE)_SRCDIR)
+$(call dieon_undef_or_empty,@(MODULE)_EBUILD_ARGS)
+
+# Location of staged.
+@(module)_staging_dir := $(abspath $(stagingdir)$(@(MODULE)_TARGET_PREFIX))
+
+# Location of bundled.
+@(module)_bundle_dir := $(bundle_rootdir)$(@(MODULE)_TARGET_PREFIX)
+
+@(module)_cflags  := $(@(MODULE)_CFLAGS) -I$(stagingdir)/usr/include
+@(module)_ldflags := $(@(MODULE)_LDFLAGS) \
+                -L$(stagingdir)/lib \
+                -Wl,-rpath-link,$(stagingdir)/lib
+
+# Additional @(module) specific make arguments given to ebuild commands
+@(module)_make_args := PREFIX:=/ \
+                  INCLUDEDIR:=/usr/include \
+                  EXTRA_CFLAGS:="$(@(module)_cflags)" \
+                  EXTRA_LDFLAGS:="$(@(module)_ldflags)" \
+                  $(@(MODULE)_EBUILD_ARGS)
+
+define @(module)_make_cmd
+$(call ebuild_make_cmd,$(@(MODULE)_SRCDIR),$(1),$(@(module)_make_args) $(2))
+endef
+
+#raw
+################################################################################
+# This module help message
+################################################################################
+#end raw
+
+define module_help
+Build and install @(module), a ...
+
+Source
+======
+  http://...
+
+Configuration variables
+=======================
+@(MODULE)_SRCDIR
+  Path to @(module) source tree root directory
+  $(call help_render_vars,$(@(MODULE)_SRCDIR))
+
+@(MODULE)_TARGET_PREFIX
+  Path to architecture-independent files install root directory
+  $(call help_render_vars,$(@(MODULE)_TARGET_PREFIX))
+
+@(MODULE)_DEFCONFIG_FILE
+  Optional default build configuration file path
+  $(call help_render_vars,$(@(MODULE)_DEFCONFIG_FILE))
+
+@(MODULE)_CONFIG_FILES
+  Additional configuration files merged with current configuration
+  $(call help_render_vars,$(@(MODULE)_CONFIG_FILES))
+
+@(MODULE)_EBUILD_ARGS
+  Arguments passed to ebuild build process
+  $(call help_render_vars,$(@(MODULE)_EBUILD_ARGS))
+
+@(MODULE)_CFLAGS
+  Optional extra CFLAGS passed to @(module) compile process
+  $(call help_render_vars,$(@(MODULE)_CFLAGS))
+
+@(MODULE)_LDFLAGS
+  Optional extra LDFLAGS passed to @(module) link process
+  $(call help_render_vars,$(@(MODULE)_LDFLAGS))
+
+Installed
+=========
+binary::
+$(call help_install_files,$(@(MODULE)_TARGET_PREFIX)/bin,@(module))
+
+Shared library::
+$(call help_install_files,$(@(MODULE)_TARGET_PREFIX)/lib,lib@(module).so)
+
+Bundled
+=======
+binary::
+$(call help_bundle_files,$(@(MODULE)_TARGET_PREFIX)/bin,@(module))
+
+Shared library::
+$(call help_bundle_files,$(@(MODULE)_TARGET_PREFIX)/lib,lib@(module).so)
+endef
+
+#raw
+#################################################################################
+## Configure logic
+#################################################################################
+#end raw
+
+define @(module)_defconfig_recipe
++$(Q)$(call ebuild_config_cmd, \
+            $(@(MODULE)_SRCDIR), \
+            defconfig, \
+            $(@(module)_make_args) DEFCONFIG:="$(@(MODULE)_DEFCONFIG_FILE)")
+endef
+
+define @(module)_merge_config_recipe
++$(Q)$(call ebuild_merge_config_cmd, \
+            $(@(MODULE)_SRCDIR), \
+            $(wildcard $(@(MODULE)_CONFIG_FILES)), \
+            $(@(module)_make_args))
+endef
+
+define @(module)_saveconfig_recipe
++$(Q)$(call ebuild_saveconfig_cmd,$(@(MODULE)_SRCDIR),$(@(module)_make_args))
+endef
+
+define @(module)_guiconfig_recipe
++$(Q)$(call ebuild_guiconfig_cmd,$(@(MODULE)_SRCDIR),$(@(module)_make_args))
+endef
+
+$(call ebuild_gen_config_rules, \
+       $(@(MODULE)_CONFIG_FILES), \
+       @(module)_defconfig_recipe, \
+       @(module)_merge_config_recipe, \
+       @(module)_saveconfig_recipe, \
+       @(module)_guiconfig_recipe)
+
+#raw
+################################################################################
+# Build logic
+################################################################################
+#end raw
+
+define @(module)_build_recipe
++$(Q)$(call @(module)_make_cmd,build)
+endef
+
+$(call ebuild_gen_build_rule,@(module)_build_recipe)
+
+#raw
+################################################################################
+# Clean logic
+################################################################################
+#end raw
+
+define @(module)_clean_recipe
++$(Q)$(call @(module)_make_cmd,clean)
+endef
+
+$(call ebuild_gen_clean_rule,@(module)_clean_recipe)
+
+#raw
+################################################################################
+# Install logic
+################################################################################
+#end raw
+
+define @(module)_install_recipe
++$(Q)$(call @(module)_make_cmd,install,DESTDIR:=$(stagingdir))
+endef
+
+$(call ebuild_gen_install_rule,@(module)_install_recipe)
+
+#raw
+################################################################################
+# Uninstall logic
+################################################################################
+#end raw
+
+define @(module)_uninstall_recipe
++$(Q)$(call @(module)_make_cmd,uninstall,DESTDIR:=$(stagingdir))
+endef
+
+$(call ebuild_gen_uninstall_rule,@(module)_uninstall_recipe)
+
+#raw
+################################################################################
+# Bundle logic
+################################################################################
+#end raw
+
+define @(module)_bundle_recipe
+$(Q)$(call bundle_bin_cmd, \
+           $(@(module)_staging_dir)/bin/@(module), \
+           $(bundle_rootdir)/bin)
+$(Q)$(call bundle_lib_cmd, \
+           $(@(module)_staging_dir)/lib/lib@(module).so, \
+           $(bundle_rootdir)/lib)
+endef
+
+$(call ebuild_gen_bundle_rule,@(module)_bundle_recipe)
+
+#raw
+################################################################################
+# Drop logic
+################################################################################
+#end raw
+
+define @(module)_drop_recipe
+$(Q)$(call drop_cmd,$(@(module)_bundle_dir)/bin/@(module))
+$(Q)$(call drop_lib_cmd, \
+           $(stagingdir)/lib/lib@(module).so, \
+           $(@(module)_bundle_dir)/lib)
+endef
+
+$(call ebuild_gen_drop_rule,@(module)_drop_recipe)
