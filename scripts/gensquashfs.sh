@@ -42,7 +42,7 @@ Where:
   SQUASHFS_IMG                       -- pathname to SquashFS image file to
                                         generate
   FAKE_ENV_FILE                      -- pathname to environment save file to
-                                        provide fakeroot with
+                                        provide fakeroot with
   SQUASHFS_OPTS                      -- mksquashfs specific options
                                         (see mksquashfs --help) ; following
                                         options will be rejected:

@@ -16,8 +16,6 @@ $(call gen_module_depends,)
 $(call dieon_undef_or_empty,@(MODULE)_SRCDIR)
 # Interrupt processing if platform specified no toolchain.
 $(call dieon_undef_or_empty,@(MODULE)_TARGET_MAKE_ARGS)
-# Interrupt processing if platform specified no target architecture.
-$(call dieon_undef_or_empty,@(MODULE)_ARCH)
 # Interrupt processing if platform specified no default build configuration.
 $(call dieon_undef_or_empty,@(MODULE)_DEFCONFIG_FILE)
 
@@ -25,10 +23,9 @@ $(call dieon_undef_or_empty,@(MODULE)_DEFCONFIG_FILE)
 @(module)_ldflags := $(@(MODULE)_LDFLAGS) -L$(stagingdir)/lib
 
 # Additional @(module) specific make arguments given to kbuild commands
-@(module)_make_args := ARCH:=$(@(MODULE)_ARCH) \
-                     $(@(MODULE)_TARGET_MAKE_ARGS) \
-                     EXTRA_CFLAGS:="$(@(module)_cflags)" \
-                     EXTRA_LDFLAGS:="$(@(module)_ldflags)"
+@(module)_make_args := $(@(MODULE)_TARGET_MAKE_ARGS) \
+                       EXTRA_CFLAGS:="$(@(module)_cflags)" \
+                       EXTRA_LDFLAGS:="$(@(module)_ldflags)"
 
 define @(module)_make_cmd
 $(call kbuild_make_cmd,$(@(MODULE)_SRCDIR),$(1),$(@(module)_make_args) $(2))
@@ -56,10 +53,6 @@ Configuration variables
 @(MODULE)_TARGET_MAKE_ARGS
   Path to @(module) cross compiling tool chain
   $(call help_render_vars, $(@(MODULE)_TARGET_MAKE_ARGS))
-
-@(MODULE)_ARCH
-  @(module) architecture to build for
-  $(call help_render_vars, $(@(MODULE)_ARCH))
 
 @(MODULE)_CFLAGS
   Optional extra CFLAGS passed to @(module) compile process
@@ -105,6 +98,7 @@ endef
 #end raw
 
 define @(module)_defconfig_recipe
+$(Q)$(call cp_cmd,$(@(MODULE)_DEFCONFIG_FILE),$(module_builddir)/.config)
 +$(Q)$(call kbuild_config_cmd, \
             $(@(MODULE)_SRCDIR), \
             $(@(MODULE)_DEFCONFIG), \
@@ -120,7 +114,7 @@ define @(module)_merge_config_recipe
 endef
 
 define @(module)_saveconfig_recipe
-$(Q)$(call kbuild_saveconfig_cmd, \
++$(Q)$(call kbuild_saveconfig_cmd, \
             $(@(MODULE)_SRCDIR), \
             $(@(module)_make_args))
 endef
