@@ -242,10 +242,10 @@ define _ebuild_native_rules
 .PHONY: help
 help: | $(module_builddir)
 
-.PHONY: cscope tags
-cscope tags: $(config_target)
+.PHONY: $(2)
+$(2): $(config_target)
 
-help cscope tags:
+help $(2):
 	$$(call $(strip $(1)),$$(@))
 endef
 
@@ -254,10 +254,11 @@ endef
 #                             as-is.
 #
 # $(1): name of native recipe macro
+# $(2): list of supported native targets
 #
 # The idea here is to allow invocation of module's Ebuild targets which are not
 # part of crafter's standard target scheme.
-# Supported usual Ebuild targets are:
+# Usual Ebuild targets are:
 # * help   -- to run module's native help target
 # * cscope -- to run module's native cscope target
 # * tags   -- to run module's native tags target
@@ -271,5 +272,5 @@ endef
 # At expanding time, this macro is given a single parameter holding the name of
 # the invoked target, i.e. one of the targets listed above.
 define ebuild_gen_native_rules
-$(eval $(call _ebuild_native_rules,$(1)))
+$(eval $(call _ebuild_native_rules,$(1),$(2)))
 endef
