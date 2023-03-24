@@ -212,6 +212,26 @@ _clear_install_stamp:
 	$(Q)rm -f $(install_target)
 
 ################################################################################
+# doc: - Current module documentation target
+#
+# Build and install documentation.
+#
+# Depends on a complete build
+################################################################################
+
+.PHONY: doc
+doc: $(build_target) | $(docdir)
+
+################################################################################
+# undoc: - Current module documentation cleanup target
+#
+# Cleanup documentation
+################################################################################
+
+.PHONY: undoc
+undoc:
+
+################################################################################
 # bundle: - Current module bundle target
 #
 # Bundle current module objects.
@@ -253,6 +273,7 @@ $(addprefix $(builddir),$(MODULES)) \
 $(addprefix $(installdir),$(MODULES)) \
 $(stagingdir) $(addprefix $(stagingdir)/,$(_root_subdirs)) \
 $(hostdir) $(addprefix $(hostdir)/,$(_root_subdirs)) \
+$(docdir) \
 $(bundledir) $(bundle_rootdir):
 	$(Q)$(call mkdir_cmd,$(@))
 

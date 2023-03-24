@@ -179,6 +179,13 @@ define stagingdir
 $(outdir)/staging
 endef
 
+# docdir - Expand to documentation directory path for current platform.
+#
+# Documentation should be installed under this directory path.
+define docdir
+$(outdir)/doc
+endef
+
 # bundledir - Expand to bundle directory path for current platform.
 #
 # Objects that are ready to be used outside of the build system will be placed

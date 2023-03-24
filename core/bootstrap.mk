@@ -505,37 +505,43 @@ Applicable to **MODULE** and default platform only !
 defconfig-<MODULE>
   setup default construction configuration **(forced)**
 
-saveconfig-<MODULE>      
+saveconfig-<MODULE>
   save current construction configuration  **(forced)**
 
-guiconfig-<MODULE>       
+guiconfig-<MODULE>
   run the GUI construction configurator    **(forced)**
 
-config-<MODULE>          
+config-<MODULE>
   configure construction                   **(forced)**
 
-build-<MODULE>           
+build-<MODULE>
   build intermediate objects               **(forced)**
 
-install-<MODULE>         
+install-<MODULE>
   install final objects                    **(forced)**
 
-bundle-<MODULE>          
+bundle-<MODULE>
   install deliverable objects              **(forced)**
 
-drop-<MODULE>            
+doc-<MODULE>
+  install documentation                    **(forced)**
+
+undoc-<MODULE>
+  remove documentation
+
+drop-<MODULE>
   remove bundled objects
 
-uninstall-<MODULE>       
+uninstall-<MODULE>
   *drop-<MODULE>* + remove staged objects
 
-clean-<MODULE>           
+clean-<MODULE>
   *uninstall-<MODULE>* + remove intermediate objects
 
-clobber-<MODULE>         
+clobber-<MODULE>
   remove all generated objects
 
-help-<MODULE>            
+help-<MODULE>
   display help message
 
 Where
@@ -573,6 +579,7 @@ $(help_short_message)
 
 Areas
 =====
+
 build
   directory under which intermediate built objects will be generated
 
@@ -594,8 +601,16 @@ bundle
 
      $$(OUTDIR)/<BOARD>/<FLAVOUR>/
 
+doc
+  directory under which documentation deliverables will be installed
+
+  .. code:: sh
+
+     $$(OUTDIR)/<BOARD>/<FLAVOUR>/doc
+
 Variables
 =========
+
 TARGET_PLATFORM
   override default platform using a tuple of the form: <**BOARD**>-<**FLAVOUR**>; 
   cannot be mixed with explicit **TARGET_BOARD** and / or **TARGET_FLAVOUR**
@@ -829,6 +844,9 @@ $$(bundle_rootdir)/
   Path to target root FS hierarchy
   $(call help_render_vars, $(bundle_rootdir))
 
+$$(docdir)/
+  Path to documentation directory
+  $(call help_render_vars, $(docdir))
 endef
 
 # help-<module>: - Module display targets.
@@ -896,7 +914,7 @@ show-variable-%:
 # platform.
 #
 # As of today recipes generating objects are limited to config, build, install
-# and bundle. Listed prerequisites are only applicable to these.
+# doc and bundle. Listed prerequisites are only applicable to these.
 #
 # Prerequisites are retrieved from the module implementation makefile invocation
 # of the gen_module_depends() macro. Dependencies are restricted to known
@@ -949,6 +967,8 @@ endef
 # * clean-<module>
 # * install-<module>
 # * uninstall-<module>
+# * doc-<module>
+# * undoc-<module>
 # * bundle-<module>
 # * drop-<module>
 # * <module>
@@ -964,7 +984,8 @@ endef
 # Finally, the <module> target will run the bundle-<module> target only if the
 # dependency resolution logic requires it.
 define _platform_module_rules
-$(addsuffix -$(1),defconfig saveconfig guiconfig config build install bundle): \
+$(addsuffix -$(1),\
+            defconfig saveconfig guiconfig config build install doc bundle): \
 	$(call _platform_module_prereqs,$(1))
 
 .PHONY: $(1)
@@ -978,15 +999,15 @@ $(addsuffix -$(1),defconfig saveconfig guiconfig):
 	$(Q)$$(MAKE) $$(subst -$(1),,$$(@)) \
 	             $(call _platform_module_make_args,$(1))
 
-.PHONY: $(addsuffix -$(1),config build install bundle)
-$(addsuffix -$(1),config build install bundle):
+.PHONY: $(addsuffix -$(1),config build install doc bundle)
+$(addsuffix -$(1),config build install doc bundle):
 	$(call log_target,$(1),$$(call upper,$$(subst -$(1),,$$(@))))
 	$(Q)rm -f $(call stampdir,$(1))/$$(subst -$(1),,$$(@))
 	$(Q)$$(MAKE) $$(subst -$(1),,$$(@)) \
 	             $(call _platform_module_make_args,$(1))
 
-.PHONY: $(addsuffix -$(1), clobber clean uninstall drop)
-$(addsuffix -$(1),clobber clean uninstall drop):
+.PHONY: $(addsuffix -$(1), clobber clean uninstall undoc drop)
+$(addsuffix -$(1),clobber clean uninstall undoc drop):
 	$(call log_target,$(1),$$(call upper,$$(subst -$(1),,$$(@))))
 	$(Q)$$(MAKE) $$(subst -$(1),,$$(@)) \
 	             $(call _platform_module_make_args,$(1))
