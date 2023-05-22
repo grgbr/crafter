@@ -205,7 +205,7 @@ $(install_target): $(build_target) \
 # * remove the install stamp file
 ################################################################################
 .PHONY: uninstall
-uninstall: _clear_install_stamp | drop
+uninstall: _clear_install_stamp | drop undoc
 
 .PHONY: _clear_install_stamp
 _clear_install_stamp:
@@ -220,7 +220,7 @@ _clear_install_stamp:
 ################################################################################
 
 .PHONY: doc
-doc: $(build_target) | $(docdir)
+doc: | $(docdir)
 
 ################################################################################
 # undoc: - Current module documentation cleanup target

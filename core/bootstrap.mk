@@ -449,6 +449,7 @@ Targets
 
 Main targets
 ------------
+
 Applicable to all platforms
 
 list-boards
@@ -478,25 +479,27 @@ help-full
 
 Platform targets
 ----------------
+
 Applicable to default platform only !
 
-all                      
+all
   construct all modules
 
-clobber                  
+clobber
   remove all generated objects
 
-show-modules             
+show-modules
   display modules the default platform depends on
 
-list-variables           
+list-variables
   display a list of known public platform variables
 
-show-variable-<VARIABLE> 
+show-variable-<VARIABLE>
   display value of a known public platform variable
 
 Module targets
 --------------
+
 Applicable to **MODULE** and default platform only !
 
 <MODULE>
@@ -818,16 +821,19 @@ $(call title_underline,$(call upper,$(1))(1) $(VERSION) | $(1),=)
 
 Description
 ===========
+
 $(if $(call _module_help_msg,$(1)),$(call _module_help_msg,$(1)),No help provided.)
 
 Dependencies
 ============
+
 $(if $(call _list_module_depends,$(1)),$(shell \
   $(call _break_words_cmd,$(sort $(call _list_module_depends,$(1))))) \
   ,none)
 
 Areas
 =====
+
 $$(hostdir)/
   Path to host tools directory
   $(call help_render_vars, $(hostdir))
@@ -985,7 +991,7 @@ endef
 # dependency resolution logic requires it.
 define _platform_module_rules
 $(addsuffix -$(1),\
-            defconfig saveconfig guiconfig config build install doc bundle): \
+            defconfig saveconfig guiconfig config build install bundle): \
 	$(call _platform_module_prereqs,$(1))
 
 .PHONY: $(1)
