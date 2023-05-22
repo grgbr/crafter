@@ -712,12 +712,20 @@ define help_install_files
 $(call help_list_files,stagingdir,$(strip $(1)),$(strip $(2)))
 endef
 
+define _help_render_vars
+
+  .. code-block:: sh
+$(shell split() { for i in "$$@"; do printf '\\n     %s' "$$i"; done; }; split $(1))
+endef
+
 # help_render_vars() - Parse split variable and print it one shell arguments by
 #                      line.
 #
 # $(1): vars must be split
 define help_render_vars
+$(if $(strip $(1)),$(call _help_render_vars,$(1)),
 
-  .. code:: sh
-$(shell split() { for i in "$$@"; do printf '\\n     %s' "$$i"; done; }; split $(1))
+  .. code-block:: sh
+
+)
 endef
