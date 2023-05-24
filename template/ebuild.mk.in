@@ -9,7 +9,11 @@ cheetahVarStartToken = @
 include $(CRAFTERDIR)/core/module.mk
 include $(CRAFTERDIR)/core/ebuild.mk
 
-# Module depends
+# Module depends: 
+# - add module name for mandatory depends
+# - use optional_depends function for optional depends
+# $(call gen_module_depends, @(module) \
+#                            $(call optional_depends,@(module)))
 $(call gen_module_depends, )
 
 # Ebuild Base variable depends

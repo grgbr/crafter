@@ -104,6 +104,14 @@ define gen_module_depends
 $(eval $(call _module_depends_rule,$(1)))
 endef
 
+# optional_depends() - Add inter-module dependency for the current module only
+#                      if modules are in $(MODULES) list.
+#
+# $(1): list of modules the current module depend on optionally
+define optional_depends
+$(filter $(1),$(MODULES))
+endef
+
 # _log_module_target() - Display a message indicating which target is running.
 #
 # $(1): target name

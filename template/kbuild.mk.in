@@ -9,8 +9,12 @@ cheetahVarStartToken = @
 include $(CRAFTERDIR)/core/module.mk
 include $(CRAFTERDIR)/core/kbuild.mk
 
-# Module depends
-$(call gen_module_depends,)
+# Module depends: 
+# - add module name for mandatory depends
+# - use optional_depends function for optional depends
+# $(call gen_module_depends, @(module) \
+#                            $(call optional_depends,@(module)))
+$(call gen_module_depends, )
 
 # Interrupt processing if platform specified no source tree.
 $(call dieon_undef_or_empty,@(MODULE)_SRCDIR)

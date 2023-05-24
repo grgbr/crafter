@@ -8,7 +8,11 @@ cheetahVarStartToken = @
 #set @MODULE = @module.upper()
 include $(CRAFTERDIR)/core/module.mk
 
-# This module dependencies...
+# Module depends: 
+# - add module name for mandatory depends
+# - use optional_depends function for optional depends
+# $(call gen_module_depends, @(module) \
+#                            $(call optional_depends,@(module)))
 $(call gen_module_depends, )
 
 # Interrupt processing if platform specified no source tree.
