@@ -39,6 +39,9 @@ empty :=
 # space - Denotes a space character
 space := $(empty) $(empty)
 
+# comma - Denotes a comma character
+comma := ,
+
 # newline - Denotes a new line character
 define newline
 $(empty)
