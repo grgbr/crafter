@@ -570,6 +570,32 @@ $(call log_action,DROP,$(1)); \
 $(call fake_root_cmd,$(bundle_fake_root_env),rm -f "$(strip $(1))")
 endef
 
+# bundle_lib_nostrip_cmd() - Expand to a shell command suitable for installing
+#                            an unstripped shared library file under the bundle
+#                            area.
+#
+# $(1): path to source library file to bundle
+# $(2): path to directory to store library file into
+#
+# Destination library file basename will be named after the ELF SONAME field
+# embedded into the source library file to skip additional shared library
+# links creation.
+define bundle_lib_nostrip_cmd
+if ! name=$$(env READELF=$(LIBC_CROSS_COMPILE)readelf \
+             $(CRAFTER_SCRIPTDIR)/so_name.sh $(1)); then \
+	echo 'bundle_lib: $(strip $(1)): invalid library.' >&2; \
+	exit 1; \
+fi; \
+dst_sofile="$(strip $(2))/$$name"; \
+$(call log_action,BNDLLIB,$$dst_sofile); \
+if ! $(call fake_root_cmd, \
+            $(bundle_fake_root_env), \
+            install --mode 755 -D $(1) "$$dst_sofile"); then \
+	echo 'bundle_lib: $(strip $(1)): install failed.' >&2; \
+	exit 1; \
+fi;
+endef
+
 # bundle_lib_cmd() - Expand to a shell command suitable for installing a shared
 #                    library file under the bundle area.
 #
